@@ -3,15 +3,16 @@ const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer');
 
 const LOGIN_PAGE_URL = 'https://clients.geovictoria.com/account/login';
-const SAMPLE = process.env.SAMPLE;
 const GEO_USERNAME = process.env.GEO_USERNAME;
 const GEO_PASSWORD = process.env.GEO_PASSWORD;
 
 exports.handler = async (event, context) => {
+
+  user = event.user || GEO_USERNAME;
+  password = event.password || GEO_PASSWORD;
+
   try {
-    console.log('Iniciando función Lambda...');
-    console.log('Variables de entorno:', { SAMPLE });
-    //await geovictoriaMark();
+    await geovictoriaMark(user, password);
     return {
       statusCode: 200,
       body: JSON.stringify({ message: 'Scraping completed successfully' }),
@@ -25,7 +26,7 @@ exports.handler = async (event, context) => {
   }
 }
 
-async function geovictoriaMark() {
+async function geovictoriaMark(user, password) {
   const browser = await puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
@@ -35,21 +36,19 @@ async function geovictoriaMark() {
   });
   const page = await browser.newPage();
 
-
   console.log('[1/5] Navegando a login…');
   await page.goto(LOGIN_PAGE_URL, { waitUntil: 'networkidle2', timeout: 60000 });
   await page.waitForSelector('#login-form', { timeout: 20000 });
 
   console.log('[2/5] Iniciando sesión…');
-  await page.type('#user', GEO_USERNAME, { delay: 20 });
-  await page.type('#password', GEO_PASSWORD, { delay: 20 });
+  await page.type('#user', user, { delay: 20 });
+  await page.type('#password', password, { delay: 20 });
   await page.click('#btnLogin');
 
   await page.waitForSelector('#main', { timeout: 30000 }).catch(() => {});
   await delay(5000);
-  console.log('   ✅ Login exitoso');
 
-  console.log('[3/5] Buscando el iframe de gvportal…');
+  console.log('[3/5] Buscando el iframe de gvportal');
   const iframeHandle =
     (await page.$('iframe[name="myFrame"]')) ||
     (await page.$('iframe[src*="gvportal.geovictoria.com"]'));
@@ -57,7 +56,6 @@ async function geovictoriaMark() {
 
   const frame = await iframeHandle.contentFrame();
   if (!frame) throw new Error('No pude obtener contentFrame(). ¿sandbox sin allow-same-origin?');
-  console.log('   ✅ Iframe listo:', frame.url());
 
   console.log('[4/5] Leyendo <web-punch-widget>');
   await frame.waitForSelector('web-punch-widget', { timeout: 20000 });
@@ -94,8 +92,8 @@ async function geovictoriaMark() {
     throw new Error(`No se pudo clickear el botón del widget: ${clicked.reason}`);
   }
 
-  console.log(' [5/5]  ✅ Click en:', clicked.text);
-  await delay(5000);
+  console.log(' [5/5] Click en:', clicked.text);
+  await delay(2000);
   await browser.close();
 }
 
