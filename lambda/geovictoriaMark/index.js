@@ -9,22 +9,27 @@ const GEO_PASSWORD = process.env.GEO_PASSWORD;
 
 exports.handler = async (event, context) => {
 
+  console.log('Evento recibido:', event);
+
   user = event.user || GEO_USERNAME;
   password = event.password || GEO_PASSWORD;
 
-  try {
-    await geovictoriaMark(user, password);
+  if (!user || !password) {
     return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Scraping completed successfully' }),
-    };
-  } catch (error) {
-    console.error('Error during scraping:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error during scraping', error: error.message }),
+      statusCode: 400,
+      body: JSON.stringify({ message: 'Faltan las credenciales de GeoVictoria' }),
     };
   }
+
+  clicked = await geovictoriaMark(user, password);
+
+  return {
+    message: 'Scraping completed successfully',
+    result: {
+      clicked,
+      user
+    }
+  };
 }
 
 async function geovictoriaMark(user, password) {
@@ -53,10 +58,14 @@ async function geovictoriaMark(user, password) {
   const iframeHandle =
     (await page.$('iframe[name="myFrame"]')) ||
     (await page.$('iframe[src*="gvportal.geovictoria.com"]'));
-  if (!iframeHandle) throw new Error('No encontré el iframe');
+  if (!iframeHandle) {
+    throw new Error('No encontré el iframe');
+  }
 
   const frame = await iframeHandle.contentFrame();
-  if (!frame) throw new Error('No pude obtener contentFrame(). ¿sandbox sin allow-same-origin?');
+  if (!frame) {
+    throw new Error('No pude obtener contentFrame(). ¿sandbox sin allow-same-origin?');
+  }
 
   console.log('[4/5] Leyendo <web-punch-widget>');
   await frame.waitForSelector('web-punch-widget', { timeout: 20000 });
@@ -96,6 +105,8 @@ async function geovictoriaMark(user, password) {
   console.log(' [5/5] Click en:', clicked.text);
   await delay(2000);
   await browser.close();
+
+  return clicked.text;
 }
 
 const delay = (milliseconds) =>

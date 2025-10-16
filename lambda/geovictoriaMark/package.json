@@ -1,0 +1,12 @@
+{
+  "name": "geovictoria-mark-handler",
+  "version": "1.0.0",
+  "description": "Lambda handler for GeoVictoria scraping",
+  "type": "commonjs",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@sparticuz/chromium": "^141.0.0",
+    "puppeteer-core": "24.23.0"
+  }
+}
