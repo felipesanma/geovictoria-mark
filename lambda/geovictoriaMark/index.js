@@ -1,6 +1,7 @@
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 1;
+process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
+
 const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 
 const LOGIN_PAGE_URL = 'https://clients.geovictoria.com/account/login';
 const GEO_USERNAME = process.env.GEO_USERNAME;
