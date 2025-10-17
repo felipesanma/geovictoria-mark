@@ -1,12 +1,90 @@
-# Welcome to your CDK JavaScript project
+# GeoVictoria Mark (AWS Lambda + CDK)
 
-This is a blank project for CDK development with JavaScript.
+Automatiza el marcado de entrada/salida en [GeoVictoria](https://clients.geovictoria.com) usando **AWS Lambda**, **puppeteer-core** y **@sparticuz/chromium**. Se despliega con **AWS CDK v2** y expone una **Function URL** pública.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app. The build step is not required when using JavaScript.
+---
 
-## Useful commands
+## 🚀 Instalación rápida
 
-* `npm run test`         perform the jest unit tests
-* `npx cdk deploy`       deploy this stack to your default AWS account/region
-* `npx cdk diff`         compare deployed stack with current state
-* `npx cdk synth`        emits the synthesized CloudFormation template
+### 1. Requisitos
+
+* Node.js 20+
+* AWS CLI configurado (`aws configure`)
+* AWS CDK (`npm i -g aws-cdk`)
+
+### 2. Instalar dependencias
+
+```bash
+npm install
+cd lambda/geovictoriaMark
+npm install --omit=dev
+cd ../../
+```
+
+---
+
+## 🏗️ Despliegue
+
+Primera vez:
+
+```bash
+cdk bootstrap
+```
+
+Desplegar:
+
+```bash
+cdk synth
+cdk deploy
+```
+
+Salida esperada:
+
+```
+Outputs:
+GeoVictoriaMarkStack.GeoVictoriaFunctionUrl = https://abcdefgh.lambda-url.us-east-1.on.aws/
+```
+
+---
+
+## 🌐 Uso (HTTP POST)
+
+```bash
+curl -X POST https://<fn-url>/ \
+  -H "Content-Type: application/json" \
+  -d '{"user":"correo@empresa.com","password":"clave"}'
+```
+
+**Respuestas:**
+
+* `200` ✅ Ingreso/Egreso exitoso
+* `400` ❌ Faltan credenciales
+* `401` ⚠️ Credenciales inválidas
+* `500` 💥 Error interno
+
+---
+
+## 🧪 Tests
+
+Ejecutar con Jest:
+
+```bash
+npm test
+```
+
+Los tests están en `lambda/geovictoriaMark/__tests__/` y mockean Puppeteer para evitar abrir Chromium real.
+
+## 🧹 Limpieza
+
+Eliminar todos los recursos:
+
+```bash
+cdk destroy
+```
+
+---
+
+## 📄 Licencia
+
+MIT — uso libre y educativo.
+
