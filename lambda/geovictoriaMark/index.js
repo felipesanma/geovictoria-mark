@@ -7,8 +7,6 @@ const LOGIN_PAGE_URL = 'https://clients.geovictoria.com/account/login';
 
 exports.handler = async (event, context) => {
 
-  console.log('Evento recibido:', event);
-
   user = event.user;
   password = event.password;
 
