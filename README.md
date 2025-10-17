@@ -64,16 +64,6 @@ curl -X POST https://<fn-url>/ \
 
 ---
 
-## 🧪 Tests
-
-Ejecutar con Jest:
-
-```bash
-npm test
-```
-
-Los tests están en `lambda/geovictoriaMark/__tests__/` y mockean Puppeteer para evitar abrir Chromium real.
-
 ## 🧹 Limpieza
 
 Eliminar todos los recursos:
