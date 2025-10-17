@@ -1,13 +1,19 @@
 {
-  "name": "cdk-template",
+  "name": "geovictoria-mark",
   "version": "0.1.0",
   "bin": {
-    "cdk-template": "bin/cdk-template.js"
+    "cdk-template": "bin/cdk.js"
   },
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
     "cdk": "cdk",
-    "test": "jest"
+    "test": "jest --runInBand"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
   },
   "devDependencies": {
     "aws-cdk": "2.1029.4",

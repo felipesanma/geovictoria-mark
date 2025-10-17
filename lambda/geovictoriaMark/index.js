@@ -4,15 +4,13 @@ const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 
 const LOGIN_PAGE_URL = 'https://clients.geovictoria.com/account/login';
-const GEO_USERNAME = process.env.GEO_USERNAME;
-const GEO_PASSWORD = process.env.GEO_PASSWORD;
 
 exports.handler = async (event, context) => {
 
   console.log('Evento recibido:', event);
 
-  user = event.user || GEO_USERNAME;
-  password = event.password || GEO_PASSWORD;
+  user = event.user;
+  password = event.password;
 
   if (!user || !password) {
     return {
@@ -24,12 +22,9 @@ exports.handler = async (event, context) => {
   clicked = await geovictoriaMark(user, password);
 
   return {
-    message: 'Scraping completed successfully',
-    result: {
-      clicked,
-      user
-    }
-  };
+    statusCode: clicked.statusCode,
+    body: clicked.body 
+  }
 }
 
 async function geovictoriaMark(user, password) {
@@ -59,12 +54,20 @@ async function geovictoriaMark(user, password) {
     (await page.$('iframe[name="myFrame"]')) ||
     (await page.$('iframe[src*="gvportal.geovictoria.com"]'));
   if (!iframeHandle) {
-    throw new Error('No encontré el iframe');
+
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Credenciales inválidas' }),
+    };
   }
 
   const frame = await iframeHandle.contentFrame();
   if (!frame) {
-    throw new Error('No pude obtener contentFrame(). ¿sandbox sin allow-same-origin?');
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'No pude obtener contentFrame(). Reintentar más tarde' }),
+    };
   }
 
   console.log('[4/5] Leyendo <web-punch-widget>');
@@ -99,14 +102,25 @@ async function geovictoriaMark(user, password) {
   });
 
   if (!clicked.ok) {
-    throw new Error(`No se pudo clickear el botón del widget: ${clicked.reason}`);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: `No se pudo clickear el botón del widget: ${clicked.reason}`
+      }),
+    };
   }
 
   console.log(' [5/5] Click en:', clicked.text);
   await delay(2000);
   await browser.close();
 
-  return clicked.text;
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+        message: `Ingreso/egreso exitoso`,
+        clicked: clicked.text
+    }),
+  }
 }
 
 const delay = (milliseconds) =>
